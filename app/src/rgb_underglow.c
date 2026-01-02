@@ -26,9 +26,6 @@
 #include <zmk/events/usb_conn_state_changed.h>
 #include <zmk/workqueue.h>
 
-// custom inclusions
-#include <time.h>
-
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #if !DT_HAS_CHOSEN(zmk_underglow)
@@ -181,7 +178,6 @@ static void zmk_rgb_underglow_effect_swirl(void) {
 
 // new custom effect set random color
 static void zmk_rgb_underglow_effect_random(void) {
-    srand(time(NULL));
     for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
         struct zmk_led_hsb hsb = state.color;
         hsb.h = rand() % HUE_MAX;
