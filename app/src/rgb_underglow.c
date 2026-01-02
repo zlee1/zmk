@@ -218,9 +218,16 @@ static void zmk_rgb_underglow_effect_reactive(void) {
 
 static int key_press_event_listener(const zmk_event_t *eh) {
     const struct zmk_position_state_changed *ev = as_zmk_position_state_changed(eh);
-    if(ev->state == 1 && state.current_effect == UNDERGLOW_EFFECT_REACTIVE) {
-        pressed[ev->position] = 1;
+    if(ev) {
+        if(ev->state == 1 && state.current_effect == UNDERGLOW_EFFECT_REACTIVE) {
+            pressed[ev->position] = 1;
+        }
+        if(ev->state == 0 && state.current_effect == UNDERGLOW_EFFECT_REACTIVE) {
+            pressed[ev->position] = 0;
+        }
     }
+
+    return ZMK_EV_EVENT_BUBBLE;
 }
 
 static void zmk_rgb_underglow_tick(struct k_work *work) {
@@ -575,6 +582,6 @@ ZMK_SUBSCRIPTION(rgb_underglow, zmk_usb_conn_state_changed);
 #endif
 
 ZMK_LISTENER(keystroke, key_press_event_listener);
-ZMK_SUBSCRIPTION(keystroke, zmk_event_zmk_position_state_changed);
+ZMK_SUBSCRIPTION(keystroke, zmk_position_state_changed);
 
 SYS_INIT(zmk_rgb_underglow_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
