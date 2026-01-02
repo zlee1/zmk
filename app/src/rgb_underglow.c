@@ -203,6 +203,7 @@ static void zmk_rgb_underglow_effect_reactive(void) {
     for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
         if (pressed[i] == 1) {
             struct zmk_led_hsb hsb = state.color;
+            hsb.b = 0;
             // hsb.b = abs(state.animation_step - 1200) / 12;
 
             pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
