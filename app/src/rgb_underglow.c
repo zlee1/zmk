@@ -217,9 +217,9 @@ static void zmk_rgb_underglow_effect_reactive(void) {
 }
 
 static int key_press_event_listener(const zmk_event_t *eh) {
-    struct state_change = as_zmk_position_state_changed(eh)
-    if(state_change.state == 1 && state.current_effect == UNDERGLOW_EFFECT_REACTIVE) {
-        pressed[state_change.position] = 1;
+    struct zmk_position_state_changed as_zmk_position_state_changed(eh);
+    if(zmk_position_state_changed.state == 1 && state.current_effect == UNDERGLOW_EFFECT_REACTIVE) {
+        pressed[zmk_position_state_changed.position] = 1;
     }
 }
 
