@@ -179,7 +179,7 @@ static void zmk_rgb_underglow_effect_swirl(void) {
 // custom effect - set random color
 static void zmk_rgb_underglow_effect_random(void) {
     for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
-        if (state.animation_step % (26 - (state.animation_speed * 5)) == 0) {
+        if (state.animation_step % (11 - (state.animation_speed * 2)) == 0) {
             struct zmk_led_hsb hsb = state.color;
             hsb.h = rand() % HUE_MAX;
 
