@@ -26,6 +26,11 @@
 #include <zmk/events/usb_conn_state_changed.h>
 #include <zmk/workqueue.h>
 
+// include statements for custom effects
+#include <zmk/events/position_state_changed.h>
+
+
+
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #if !DT_HAS_CHOSEN(zmk_underglow)
@@ -50,6 +55,7 @@ enum rgb_underglow_effect {
     UNDERGLOW_EFFECT_SPECTRUM,
     UNDERGLOW_EFFECT_SWIRL,
     UNDERGLOW_EFFECT_RANDOM,
+    UNDERGLOW_EFFECT_REACTIVE,
     UNDERGLOW_EFFECT_NUMBER // Used to track number of underglow effects
 };
 
@@ -191,19 +197,28 @@ static void zmk_rgb_underglow_effect_random(void) {
     state.animation_step = state.animation_step % HUE_MAX;
 }
 
+_Bool pressed[STRIP_NUM_PIXELS];
 // custom effect - reactive
 static void zmk_rgb_underglow_effect_reactive(void) {
     for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
-        struct zmk_led_hsb hsb = state.color;
-        hsb.b = abs(state.animation_step - 1200) / 12;
+        if (pressed[i] == 1) {
+            struct zmk_led_hsb hsb = state.color;
+            // hsb.b = abs(state.animation_step - 1200) / 12;
 
-        pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+            pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+        }
     }
 
     state.animation_step += state.animation_speed * 10;
 
     if (state.animation_step > 2400) {
         state.animation_step = 0;
+    }
+}
+
+static int key_press_event_listener(const zmk_event_t *eh) {
+    if(eh.state == 1 && state.current_effect == UNDERGLOW_EFFECT_REACTIVE) {
+        pressed[eh.position] = 1;
     }
 }
 
@@ -223,6 +238,9 @@ static void zmk_rgb_underglow_tick(struct k_work *work) {
         break;
     case UNDERGLOW_EFFECT_RANDOM:
         zmk_rgb_underglow_effect_random();
+        break;
+    case UNDERGLOW_EFFECT_REACTIVE:
+        zmk_rgb_underglow_effect_reactive();
         break;
     }
 
@@ -554,5 +572,8 @@ ZMK_SUBSCRIPTION(rgb_underglow, zmk_activity_state_changed);
 #if IS_ENABLED(CONFIG_ZMK_RGB_UNDERGLOW_AUTO_OFF_USB)
 ZMK_SUBSCRIPTION(rgb_underglow, zmk_usb_conn_state_changed);
 #endif
+
+ZMK_LISTENER(keystroke, key_press_event_listener);
+ZMK_SUBSCRIPTION(keystroke, zmk_event_zmk_position_state_changed);
 
 SYS_INIT(zmk_rgb_underglow_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
