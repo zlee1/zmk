@@ -255,10 +255,10 @@ static int key_press_event_listener(const zmk_event_t *eh) {
 
     if(ev) {
         if(ev->state == 1 && state.current_effect == UNDERGLOW_EFFECT_REACTIVE) {
-            pressed[ev->position] = 1;
+            pressed[ev->position+6] = 1;
         }
         if(ev->state == 0 && state.current_effect == UNDERGLOW_EFFECT_REACTIVE) {
-            pressed[ev->position] = 0;
+            pressed[ev->position+6] = 0;
         }
     }
 
