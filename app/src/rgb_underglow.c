@@ -198,6 +198,7 @@ static void zmk_rgb_underglow_effect_random(void) {
 }
 
 _Bool pressed[STRIP_NUM_PIXELS];
+int cur_i = 6;
 // custom effect - reactive
 static void zmk_rgb_underglow_effect_reactive(void) {
     for (int i = 6; i < STRIP_NUM_PIXELS; i++) {
@@ -207,7 +208,11 @@ static void zmk_rgb_underglow_effect_reactive(void) {
         //     pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
         // }
         if(state.animation_step%100 == 0){
-            if(STRIP_NUM_PIXELS%i == 0){
+            if(i == cur_i){
+                cur_i = cur_i+1;
+                if(cur_i == STRIP_NUM_PIXELS){
+                    cur_i = 6;
+                }
                 struct zmk_led_hsb hsb = state.color;
                 hsb.b = 1;
                 pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
