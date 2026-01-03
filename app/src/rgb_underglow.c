@@ -201,7 +201,7 @@ _Bool pressed[STRIP_NUM_PIXELS];
 int cur_i = 6;
 // custom effect - reactive
 static void zmk_rgb_underglow_effect_reactive(void) {
-    for (int i = 6; i < STRIP_NUM_PIXELS; i++) {
+    for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
         // if(state.animation_step%20 == 0 && i >= 0 && i < 6){
         //     struct zmk_led_hsb hsb = state.color;
         //     hsb.h = rand()%HUE_MAX;
@@ -232,7 +232,7 @@ static void zmk_rgb_underglow_effect_reactive(void) {
         // }
     }
 
-    state.animation_step += state.animation_speed * 10;
+    state.animation_step += 1; //state.animation_speed * 10;
 
     if (state.animation_step > 2400) {
         state.animation_step = 0;
