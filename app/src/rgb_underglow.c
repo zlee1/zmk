@@ -253,13 +253,37 @@ static int key_press_event_listener(const zmk_event_t *eh) {
 
     LOG_INF("pressed key at %d", &ev->position);
 
-    if(ev) {
-        if(ev->state == 1 && state.current_effect == UNDERGLOW_EFFECT_REACTIVE) {
-            pressed[ev->position+6] = 1;
-        }
-        if(ev->state == 0 && state.current_effect == UNDERGLOW_EFFECT_REACTIVE) {
-            pressed[ev->position+6] = 0;
-        }
+    int pixel_pos;
+    // int device;
+    if(ev && state.current_effect == UNDERGLOW_EFFECT_REACTIVE) { 
+
+        // keys
+        // |0 |1 |2 |3 |4 |5 |       |6 |7 |8 |9 |10|11|
+        // |12|13|14|15|16|17| ----- |18|19|20|21|22|23|
+        // |24|25|26|27|28|29|       |30|31|32|33|34|35|
+        //          |36|37|38|       |39|40|41|
+
+        // leds
+        // |3 |4 |9 |10|17|18|       |18|17|10|9 |4 |3 |
+        // |2 |5 |8 |11|16|19| ----- |19|16|11|8 |5 |2 |
+        // |1 |6 |7 |12|15|20|       |20|15|12|7 |6 |1 |
+        //          |13|14|0 |       |0 |14|13|
+
+        int leds[] = {
+            3, 4, 9, 10, 17, 18, 18, 17, 10, 9, 4, 3,
+            2, 5, 8, 11, 16, 19, 19, 16, 11, 8, 5, 2,
+            1, 6, 7, 12, 15, 20, 20, 15, 12, 7, 6, 1,
+                     13, 14, 0,   0, 14, 13
+        };
+        
+        pressed[leds[ev->position]+6] = ev->state;
+        
+        // if(ev->state == 1 && state.current_effect == UNDERGLOW_EFFECT_REACTIVE) {
+        //     pressed[ev->position+6] = 1;
+        // }
+        // if(ev->state == 0 && state.current_effect == UNDERGLOW_EFFECT_REACTIVE) {
+        //     pressed[ev->position+6] = 0;
+        // }
     }
 
     return ZMK_EV_EVENT_BUBBLE;
