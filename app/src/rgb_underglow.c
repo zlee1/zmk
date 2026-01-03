@@ -56,6 +56,7 @@ enum rgb_underglow_effect {
     UNDERGLOW_EFFECT_SWIRL,
     UNDERGLOW_EFFECT_RANDOM,
     UNDERGLOW_EFFECT_REACTIVE,
+    UNDERGLOW_EFFECT_PIXEL_CYCLE,
     UNDERGLOW_EFFECT_NUMBER // Used to track number of underglow effects
 };
 
@@ -197,16 +198,10 @@ static void zmk_rgb_underglow_effect_random(void) {
     state.animation_step = state.animation_step % HUE_MAX;
 }
 
-_Bool pressed[STRIP_NUM_PIXELS];
 int cur_i = 6;
-// custom effect - reactive
-static void zmk_rgb_underglow_effect_reactive(void) {
+// custom effect - cycle through pixels to identify indices
+static void zmk_rgb_underglow_effect_pixel_cycle(void) {
     for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
-        // if(state.animation_step%20 == 0 && i >= 0 && i < 6){
-        //     struct zmk_led_hsb hsb = state.color;
-        //     hsb.h = rand()%HUE_MAX;
-        //     pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
-        // }
         if(state.animation_step%20 == 0){
             if(i == cur_i){
                 struct zmk_led_hsb hsb = state.color;
@@ -218,19 +213,34 @@ static void zmk_rgb_underglow_effect_reactive(void) {
                 pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
             }
         }
-        
-        // if (pressed[i] == 1) {
-        //     struct zmk_led_hsb hsb = state.color;
-        //     hsb.b = 0;
-        //     // hsb.b = abs(state.animation_step - 1200) / 12;
-
-        //     pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
-        // }
     }
 
     cur_i = cur_i+1;
     if(cur_i == STRIP_NUM_PIXELS){
         cur_i = 6;
+    }
+    
+    state.animation_step += 1;
+
+    if (state.animation_step > 2400) {
+        state.animation_step = 0;
+    }
+}
+
+_Bool pressed[STRIP_NUM_PIXELS];
+// custom effect - react to key press
+static void zmk_rgb_underglow_effect_reactive(void) {
+    for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
+        if(state.animation_step%20 == 0){
+            if(pressed[i] == 1){
+                struct zmk_led_hsb hsb = state.color;
+                pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+            }else{
+                struct zmk_led_hsb hsb = state.color;
+                hsb.b = 0;
+                pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+            }
+        }
     }
     
     state.animation_step += 1; //state.animation_speed * 10;
@@ -276,6 +286,9 @@ static void zmk_rgb_underglow_tick(struct k_work *work) {
         break;
     case UNDERGLOW_EFFECT_REACTIVE:
         zmk_rgb_underglow_effect_reactive();
+        break;
+    case UNDERGLOW_EFFECT_PIXEL_CYCLE:
+        zmk_rgb_underglow_effect_pixel_cycle();
         break;
     }
 
