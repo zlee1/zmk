@@ -251,7 +251,7 @@ static void zmk_rgb_underglow_effect_reactive(void) {
 static int key_press_event_listener(const zmk_event_t *eh) {
     const struct zmk_position_state_changed *ev = as_zmk_position_state_changed(eh);
 
-    printf("pressed key at %d", &ev->position);
+    LOG_INF("pressed key at %d", &ev->position);
 
     if(ev) {
         if(ev->state == 1 && state.current_effect == UNDERGLOW_EFFECT_REACTIVE) {
