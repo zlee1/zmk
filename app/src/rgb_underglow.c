@@ -200,17 +200,24 @@ static void zmk_rgb_underglow_effect_random(void) {
 _Bool pressed[STRIP_NUM_PIXELS];
 // custom effect - reactive
 static void zmk_rgb_underglow_effect_reactive(void) {
-    for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
-        if(state.animation_step%20 == 0 && i >= 0 && i <= 6){
-            struct zmk_led_hsb hsb = state.color;
-            hsb.h = rand()%HUE_MAX;
-            pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+    for (int i = 6; i < STRIP_NUM_PIXELS; i++) {
+        // if(state.animation_step%20 == 0 && i >= 0 && i < 6){
+        //     struct zmk_led_hsb hsb = state.color;
+        //     hsb.h = rand()%HUE_MAX;
+        //     pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+        // }
+        if(state.animation_step%100 == 0){
+            if(STRIP_NUM_PIXELS%i == 0){
+                struct zmk_led_hsb hsb = state.color;
+                hsb.b = 1;
+                pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+            }else{
+                struct zmk_led_hsb hsb = state.color;
+                hsb.b = 0;
+                pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+            }
         }
-        if(i > 6){
-            struct zmk_led_hsb hsb = state.color;
-            hsb.b = 0;
-            pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
-        }
+        
         // if (pressed[i] == 1) {
         //     struct zmk_led_hsb hsb = state.color;
         //     hsb.b = 0;
