@@ -234,15 +234,31 @@ _Bool pressed_peripheral[STRIP_NUM_PIXELS];
 
 int animation_step_central[STRIP_NUM_PIXELS];
 int animation_step_peripheral[STRIP_NUM_PIXELS];
+
+for(int i = 0; i < STRIP_NUM_PIXELS; i++){
+    pressed_central[i] = 0;
+    pressed_peripheral[i] = 0;
+    animation_step_central[i] = 0;
+    animation_step_peripheral[i] = 0;
+}
+
 // custom effect - react to key press
 static void zmk_rgb_underglow_effect_reactive(void) {
+    int peak_step = 500;
+    int end_step = 3000;
+
     if(CENTRAL){
         for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
             struct zmk_led_hsb hsb = state.color;
-            if(pressed_central[i] == 0){
-                hsb.b = 0;
+            if(pressed_central[i] == 1 || animation_step_central[i] != 0){
+                animation_step_central[i] += state.animation_speed * 10;
+                if(animation_step_central[i] < peak_step){
+                    hsb.b = BRT_MAX*(animation_step_central[i]/peak_step);
+                }else{
+                    hsb.b = BRT_MAX-(BRT_MAX*(animation_step_central[i]/end_step));
+                }
+                pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
             }
-            pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
         }
     }else{
         for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
