@@ -231,30 +231,29 @@ static void zmk_rgb_underglow_effect_pixel_cycle(void) {
 
 _Bool pressed_central[STRIP_NUM_PIXELS];
 _Bool pressed_peripheral[STRIP_NUM_PIXELS];
+
+int animation_step_central[STRIP_NUM_PIXELS];
+int animation_step_peripheral[STRIP_NUM_PIXELS];
 // custom effect - react to key press
 static void zmk_rgb_underglow_effect_reactive(void) {
-    for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
-        if(CENTRAL){
-            if(pressed_central[i] == 1){
-                struct zmk_led_hsb hsb = state.color;
-                pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
-            }else{
-                struct zmk_led_hsb hsb = state.color;
+    if(CENTRAL){
+        for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
+            struct zmk_led_hsb hsb = state.color;
+            if(pressed_central[i] == 0){
                 hsb.b = 0;
-                pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
             }
-        }else{
-            if(pressed_peripheral[i] == 1){
-                struct zmk_led_hsb hsb = state.color;
-                pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
-            }else{
-                struct zmk_led_hsb hsb = state.color;
-                hsb.b = 0;
-                pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
-            }
+            pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
         }
-        
+    }else{
+        for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
+            struct zmk_led_hsb hsb = state.color;
+            if(pressed_peripheral[i] == 0){
+                hsb.b = 0;
+            }
+            pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+        }
     }
+    
     
     state.animation_step += 1; //state.animation_speed * 10;
 
