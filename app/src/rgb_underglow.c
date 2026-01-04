@@ -299,7 +299,7 @@ static int key_press_event_listener(const zmk_event_t *eh) {
         }
 
         _Bool central;
-        for(int i = 0; i < STRIP_NUM_PIXELS; i++){
+        for(int i = 0; i < STRIP_NUM_PIXELS-6; i++){
             if(ev->position == central_keys[i]){
                 pressed_central[leds[ev->position]+6] = ev->state;
                 return ZMK_EV_EVENT_BUBBLE
