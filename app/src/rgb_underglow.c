@@ -237,21 +237,40 @@ int animation_step_peripheral[STRIP_NUM_PIXELS];
 
 // custom effect - react to key press
 static void zmk_rgb_underglow_effect_reactive(void) {
-    int peak_step = 500;
-    int end_step = 3000;
+    int peak_step = 1200;
+    int end_step = 2400;
 
     if(CENTRAL){
         for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
             struct zmk_led_hsb hsb = state.color;
-            if(pressed_central[i] == 1 || animation_step_central[i] != 0){
-                animation_step_central[i] += state.animation_speed * 10;
-                if(animation_step_central[i] < peak_step){
-                    hsb.b = BRT_MAX*(animation_step_central[i]/peak_step);
-                }else{
-                    hsb.b = BRT_MAX-(BRT_MAX*(animation_step_central[i]/end_step));
-                }
-                pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+
+            if((pressed_central[i] == 1 && animation_step_central[i] == 0) || animation_step_central[i] > 0){
+                // increment animation step
+                animation_step_central[i] += state.animation_speed*10;
             }
+
+
+            if(animation_step_central[i] == 0){
+                hsb.b = 0;
+            }else if(animation_step_central[i] < peak_step){
+                hsb.b = BRT_MAX*((float)animation_step_central[i]/(float)peak_step);
+            }else if(animation_step_central[i] > peak_step){
+                hsb.b = BRT_MAX-(BRT_MAX*(1-((float)animation_step_central[i]/(float)peak_step)));
+            }
+
+            if(animation_step_central[i] > end_step && pressed_central == 0){
+                animation_step_central[i] = 0;
+            }
+
+            // if(pressed_central[i] == 1 || animation_step_central[i] != 0){
+            //     animation_step_central[i] += state.animation_speed * 10;
+            //     if(animation_step_central[i] < peak_step){
+            //         hsb.b = BRT_MAX*(animation_step_central[i]/peak_step);
+            //     }else{
+            //         hsb.b = BRT_MAX-(BRT_MAX*(animation_step_central[i]/end_step));
+            //     }
+            //     pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+            // }
         }
     }else{
         for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
