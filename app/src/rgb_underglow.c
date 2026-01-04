@@ -251,7 +251,11 @@ static void zmk_rgb_underglow_effect_reactive(void) {
                 if(animation_step_central[i] >= peak_step){
                     animation_step_central[i] = peak_step*((float)(animation_step_central[i]-peak_step)/(float)(end_step-peak_step));
                 }else{
-                    animation_step_central[i] += state.animation_speed*10;    
+                    if(animation_step_central[i]+state.animation_speed*10 > peak_step){
+                        animation_step_central[i] = peak_step;
+                    }else{
+                        animation_step_central[i] += state.animation_speed*10;
+                    }
                 }
             }else if((pressed_central[i] == 1 && animation_step_central[i] == 0) || animation_step_central[i] > 0){
                 // increment animation step
