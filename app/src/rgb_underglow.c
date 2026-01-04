@@ -41,6 +41,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #define STRIP_CHOSEN DT_CHOSEN(zmk_underglow)
 #define STRIP_NUM_PIXELS DT_PROP(STRIP_CHOSEN, chain_length)
+#define CENTRAL CONFIG_ZMK_SPLIT_ROLE_CENTRAL
 
 #define HUE_MAX 360
 #define SAT_MAX 100
@@ -227,18 +228,32 @@ static void zmk_rgb_underglow_effect_pixel_cycle(void) {
     }
 }
 
-_Bool pressed[STRIP_NUM_PIXELS];
+
+_Bool pressed_central[STRIP_NUM_PIXELS];
+_Bool pressed_peripheral[STRIP_NUM_PIXELS];
 // custom effect - react to key press
 static void zmk_rgb_underglow_effect_reactive(void) {
     for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
-        if(pressed[i] == 1){
-            struct zmk_led_hsb hsb = state.color;
-            pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+        if(CENTRAL){
+            if(pressed_central[i] == 1){
+                struct zmk_led_hsb hsb = state.color;
+                pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+            }else{
+                struct zmk_led_hsb hsb = state.color;
+                hsb.b = 0;
+                pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+            }
         }else{
-            struct zmk_led_hsb hsb = state.color;
-            hsb.b = 0;
-            pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+            if(pressed_peripheral[i] == 1){
+                struct zmk_led_hsb hsb = state.color;
+                pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+            }else{
+                struct zmk_led_hsb hsb = state.color;
+                hsb.b = 0;
+                pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+            }
         }
+        
     }
     
     state.animation_step += 1; //state.animation_speed * 10;
@@ -276,7 +291,22 @@ static int key_press_event_listener(const zmk_event_t *eh) {
                          8, 7, 0,   0, 7,  8
         };
 
-        pressed[leds[ev->position]+6] = ev->state;
+        int central_keys[] = {
+             0,  1,  2,  3,  4,  5,
+            12, 13, 14, 15, 16, 17,
+            24, 25, 26, 27, 28, 29,
+                        36, 37, 38
+        }
+
+        _Bool central;
+        for(int i = 0; i < STRIP_NUM_PIXELS; i++){
+            if(ev->position == central_keys[i]){
+                pressed_central[leds[ev->position]+6] = ev->state;
+                return ZMK_EV_EVENT_BUBBLE
+            }
+        }
+
+        pressed_peripheral[leds[ev->position]+6] = ev->state;
         
         // if(ev->state == 1 && state.current_effect == UNDERGLOW_EFFECT_REACTIVE) {
         //     pressed[ev->position+6] = 1;
