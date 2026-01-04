@@ -255,7 +255,7 @@ static void zmk_rgb_underglow_effect_reactive(void) {
             }else if(animation_step_central[i] < peak_step){
                 hsb.b = (float)BRT_MAX*((float)animation_step_central[i]/(float)peak_step);
             }else if(animation_step_central[i] > peak_step){
-                hsb.b = (float)BRT_MAX-((float)BRT_MAX*(1.0-((float)(animation_step_central[i]-peak_step)/(float)(end_step-peak_step))));
+                hsb.b = (float)BRT_MAX*(1.0-((float)(animation_step_central[i]-peak_step)/(float)(end_step-peak_step)));
             }
 
             if(animation_step_central[i] > end_step && pressed_central == 0){
