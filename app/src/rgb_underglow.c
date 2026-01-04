@@ -249,7 +249,7 @@ static void zmk_rgb_underglow_effect_reactive(void) {
                 // if key is pressed during animation and animation is in dimming phase,
                 // set current step to step with same brightness in brightening phase
                 if(animation_step_central[i] >= peak_step){
-                    animation_step_central[i] = peak_step*((float)(animation_step_central[i]-peak_step)/(float)(end_step-peak_step));
+                    animation_step_central[i] = peak_step*(1.0-(float)(animation_step_central[i]-peak_step)/(float)(end_step-peak_step));
                 }else{
                     if(animation_step_central[i]+state.animation_speed*10 > peak_step){
                         animation_step_central[i] = peak_step;
