@@ -235,13 +235,6 @@ _Bool pressed_peripheral[STRIP_NUM_PIXELS];
 int animation_step_central[STRIP_NUM_PIXELS];
 int animation_step_peripheral[STRIP_NUM_PIXELS];
 
-for(int i = 0; i < STRIP_NUM_PIXELS; i++){
-    pressed_central[i] = 0;
-    pressed_peripheral[i] = 0;
-    animation_step_central[i] = 0;
-    animation_step_peripheral[i] = 0;
-}
-
 // custom effect - react to key press
 static void zmk_rgb_underglow_effect_reactive(void) {
     int peak_step = 500;
