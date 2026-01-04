@@ -296,7 +296,7 @@ static int key_press_event_listener(const zmk_event_t *eh) {
             12, 13, 14, 15, 16, 17,
             24, 25, 26, 27, 28, 29,
                         36, 37, 38
-        }
+        };
 
         _Bool central;
         for(int i = 0; i < STRIP_NUM_PIXELS-6; i++){
