@@ -238,10 +238,10 @@ int animation_step_peripheral[STRIP_NUM_PIXELS];
 // custom effect - react to key press
 static void zmk_rgb_underglow_effect_reactive(void) {
     int peak_step = 50;
-    int end_step = 500;
+    int end_step = 750;
 
     struct zmk_led_hsb hsb = state.color;
-    int cur_b = hsb.b;
+    int cur_b = BRT_MAX;
     if(CENTRAL){
         for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
             
@@ -250,6 +250,8 @@ static void zmk_rgb_underglow_effect_reactive(void) {
                 // set current step to step with same brightness in brightening phase
                 if(animation_step_central[i] >= peak_step){
                     animation_step_central[i] = peak_step*((float)(animation_step_central[i]-peak_step)/(float)(end_step-peak_step));
+                }else{
+                    animation_step_central[i] += state.animation_speed*10;    
                 }
             }else if((pressed_central[i] == 1 && animation_step_central[i] == 0) || animation_step_central[i] > 0){
                 // increment animation step
