@@ -240,8 +240,8 @@ static void zmk_rgb_underglow_effect_reactive(void) {
 
     struct zmk_led_hsb hsb = state.color;
     int cur_b;
-    if(hsb.b < BRT_MAX/2){
-        cur_b = BRT_MAX/2;
+    if(hsb.b < BRT_MAX/4){
+        cur_b = BRT_MAX/4;
     }else{
         cur_b = hsb.b;
     }
@@ -276,8 +276,14 @@ static void zmk_rgb_underglow_effect_reactive(void) {
                 hsb.b = 0;
             }else if(animation_step_central[i] < peak_step){
                 hsb.b = (float)cur_b*((float)animation_step_central[i]/(float)peak_step);
+                if(hsb.b == 1){
+                    hsb.b = 2;
+                }
             }else if(animation_step_central[i] >= peak_step){
                 hsb.b = (float)cur_b*(1.0-((float)(animation_step_central[i]-peak_step)/(float)(end_step-peak_step)));
+                if(hsb.b == 1){
+                    hsb.b = 2;
+                }
             }
 
             if(animation_step_central[i] >= end_step){
@@ -313,8 +319,14 @@ static void zmk_rgb_underglow_effect_reactive(void) {
                 hsb.b = 0;
             }else if(animation_step_peripheral[i] < peak_step){
                 hsb.b = (float)cur_b*((float)animation_step_peripheral[i]/(float)peak_step);
+                if(hsb.b == 1){
+                    hsb.b = 2;
+                }
             }else if(animation_step_peripheral[i] >= peak_step){
                 hsb.b = (float)cur_b*(1.0-((float)(animation_step_peripheral[i]-peak_step)/(float)(end_step-peak_step)));
+                if(hsb.b == 1){
+                    hsb.b = 2;
+                }
             }
 
             if(animation_step_peripheral[i] >= end_step){
