@@ -237,25 +237,34 @@ int animation_step_peripheral[STRIP_NUM_PIXELS];
 
 // custom effect - react to key press
 static void zmk_rgb_underglow_effect_reactive(void) {
-    int peak_step = 100;
-    int end_step = 1000;
+    int peak_step = 50;
+    int end_step = 500;
 
+    struct zmk_led_hsb hsb = state.color;
+    int cur_b = hsb.b;
     if(CENTRAL){
         for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
-            struct zmk_led_hsb hsb = state.color;
-
-            if((pressed_central[i] == 1 && animation_step_central[i] == 0) || animation_step_central[i] > 0){
+            
+            if(pressed_central[i] == 1 && animation_step_central[i] != 0){
+                // if key is pressed during animation and animation is in dimming phase,
+                // set current step to step with same brightness in brightening phase
+                if(animation_step_central[i] >= peak_step){
+                    animation_step_central[i] = peak_step*((float)(animation_step_central[i]-peak_step)/(float)(end_step-peak_step));
+                }
+            }else if((pressed_central[i] == 1 && animation_step_central[i] == 0) || animation_step_central[i] > 0){
                 // increment animation step
                 animation_step_central[i] += state.animation_speed*10;
             }
+
+            
 
 
             if(animation_step_central[i] == 0){
                 hsb.b = 0;
             }else if(animation_step_central[i] < peak_step){
-                hsb.b = (float)BRT_MAX*((float)animation_step_central[i]/(float)peak_step);
+                hsb.b = (float)cur_b*((float)animation_step_central[i]/(float)peak_step);
             }else if(animation_step_central[i] >= peak_step){
-                hsb.b = (float)BRT_MAX*(1.0-((float)(animation_step_central[i]-peak_step)/(float)(end_step-peak_step)));
+                hsb.b = (float)cur_b*(1.0-((float)(animation_step_central[i]-peak_step)/(float)(end_step-peak_step)));
             }
 
             if(animation_step_central[i] >= end_step){
