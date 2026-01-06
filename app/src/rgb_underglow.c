@@ -57,9 +57,9 @@ enum rgb_underglow_effect {
     UNDERGLOW_EFFECT_SWIRL,
     UNDERGLOW_EFFECT_RANDOM,
     UNDERGLOW_EFFECT_REACTIVE,
-    UNDERGLOW_EFFECT_REACTIVE_SPECTRUM,
     UNDERGLOW_EFFECT_PIXEL_CYCLE,
-    UNDERGLOW_EFFECT_NUMBER // Used to track number of underglow effects
+    UNDERGLOW_EFFECT_REACTIVE_SPECTRUM,
+    UNDERGLOW_EFFECT_NUMBER // Used to track number of underglow effects ` A
 };
 
 struct rgb_underglow_state {
