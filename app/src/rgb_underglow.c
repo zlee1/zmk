@@ -265,7 +265,7 @@ static void zmk_rgb_underglow_effect_reactive(void){
                     per_pixel_animation_step[i] += state.animation_speed*cur_b*10;
                 }
             }
-        }else if(([i] == 1 && per_pixel_animation_step[i] == 0) || per_pixel_animation_step[i] > 0){
+        }else if((pressed[i] == 1 && per_pixel_animation_step[i] == 0) || per_pixel_animation_step[i] > 0){
             // increment animation step
             per_pixel_animation_step[i] += state.animation_speed*cur_b*10;
         }
