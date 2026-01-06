@@ -239,8 +239,13 @@ int animation_step_peripheral[STRIP_NUM_PIXELS];
 _Bool pressed[STRIP_NUM_PIXELS];
 int per_pixel_animation_step[STRIP_NUM_PIXELS];
 
-static void zmk_rgb_underglow_effect_reactive(void){
+static void zmk_rgb_underglow_effect_reactive(_Bool spectrum){
     struct zmk_led_hsb hsb = state.color;
+    if(spectrum){
+        hsb.h = state.animation_step;
+        hsb.s = SAT_MAX;
+    }
+
     int cur_b;
     if(hsb.b < BRT_MAX/4){
         cur_b = BRT_MAX/4;
@@ -290,6 +295,9 @@ static void zmk_rgb_underglow_effect_reactive(void){
 
         pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
     }
+
+    state.animation_step += state.animation_speed;
+    state.animation_step = state.animation_step % HUE_MAX;
     
     // state.animation_step += 1; //state.animation_speed * 10;
 
@@ -598,10 +606,10 @@ static void zmk_rgb_underglow_tick(struct k_work *work) {
         zmk_rgb_underglow_effect_random();
         break;
     case UNDERGLOW_EFFECT_REACTIVE:
-        zmk_rgb_underglow_effect_reactive();
+        zmk_rgb_underglow_effect_reactive(false);
         break;
     case UNDERGLOW_EFFECT_REACTIVE_SPECTRUM:
-        zmk_rgb_underglow_effect_reactive_spectrum();
+        zmk_rgb_underglow_effect_reactive(true);
         break;
     case UNDERGLOW_EFFECT_PIXEL_CYCLE:
         zmk_rgb_underglow_effect_pixel_cycle();
