@@ -57,8 +57,8 @@ enum rgb_underglow_effect {
     UNDERGLOW_EFFECT_SWIRL,
     UNDERGLOW_EFFECT_RANDOM,
     UNDERGLOW_EFFECT_REACTIVE,
-    UNDERGLOW_EFFECT_PIXEL_CYCLE,
     UNDERGLOW_EFFECT_REACTIVE_SPECTRUM,
+    UNDERGLOW_EFFECT_PIXEL_CYCLE,
     UNDERGLOW_EFFECT_NUMBER // Used to track number of underglow effects ` A
 };
 
@@ -462,7 +462,7 @@ static int key_press_event_listener(const zmk_event_t *eh) {
 
     int pixel_pos;
     // int device;
-    if(ev && state.current_effect == UNDERGLOW_EFFECT_REACTIVE) { 
+    if(ev && state.current_effect == UNDERGLOW_EFFECT_REACTIVE || state.current_effect == UNDERGLOW_EFFECT_REACTIVE_SPECTRUM) { 
 
         // keys
         // |0 |1 |2 |3 |4 |5 |       |6 |7 |8 |9 |10|11|
