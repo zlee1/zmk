@@ -57,6 +57,7 @@ enum rgb_underglow_effect {
     UNDERGLOW_EFFECT_SWIRL,
     UNDERGLOW_EFFECT_RANDOM,
     UNDERGLOW_EFFECT_REACTIVE,
+    UNDERGLOW_EFFECT_REACTIVE_SPECTRUM,
     UNDERGLOW_EFFECT_PIXEL_CYCLE,
     UNDERGLOW_EFFECT_NUMBER // Used to track number of underglow effects
 };
@@ -345,6 +346,115 @@ static void zmk_rgb_underglow_effect_reactive(void) {
     }
 }
 
+// reactive spectrum
+static void zmk_rgb_underglow_effect_reactive_spectrum(void) {
+
+    struct zmk_led_hsb hsb = state.color;
+    hsb.h = state.animation_step;
+
+    int cur_b;
+    if(hsb.b < BRT_MAX/4){
+        cur_b = BRT_MAX/4;
+    }else{
+        cur_b = hsb.b;
+    }
+
+    int peak_step = 50*cur_b;
+    int end_step = 750*cur_b;
+
+    if(CENTRAL){
+        for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
+            
+            if(pressed_central[i] == 1 && animation_step_central[i] != 0){
+                // if key is pressed during animation and animation is in dimming phase,
+                // set current step to step with same brightness in brightening phase
+                if(animation_step_central[i] >= peak_step){
+                    animation_step_central[i] = peak_step*(1.0-(float)(animation_step_central[i]-peak_step)/(float)(end_step-peak_step));
+                }else{
+                    if(animation_step_central[i]+state.animation_speed*cur_b*10 > peak_step){
+                        animation_step_central[i] = peak_step;
+                    }else{
+                        animation_step_central[i] += state.animation_speed*cur_b*10;
+                    }
+                }
+            }else if((pressed_central[i] == 1 && animation_step_central[i] == 0) || animation_step_central[i] > 0){
+                // increment animation step
+                animation_step_central[i] += state.animation_speed*cur_b*10;
+            }
+
+            
+
+
+            if(animation_step_central[i] == 0){
+                hsb.b = 0;
+            }else if(animation_step_central[i] < peak_step){
+                hsb.b = (float)cur_b*((float)animation_step_central[i]/(float)peak_step);
+                if(hsb.b == 1){
+                    hsb.b = 2;
+                }
+            }else if(animation_step_central[i] >= peak_step){
+                hsb.b = (float)cur_b*(1.0-((float)(animation_step_central[i]-peak_step)/(float)(end_step-peak_step)));
+                if(hsb.b == 1){
+                    hsb.b = 2;
+                }
+            }
+
+            if(animation_step_central[i] >= end_step){
+                animation_step_central[i] = 0;
+            }
+
+            pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+        }
+    }else{
+        for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
+            
+            if(pressed_peripheral[i] == 1 && animation_step_peripheral[i] != 0){
+                // if key is pressed during animation and animation is in dimming phase,
+                // set current step to step with same brightness in brightening phase
+                if(animation_step_peripheral[i] >= peak_step){
+                    animation_step_peripheral[i] = peak_step*(1.0-(float)(animation_step_peripheral[i]-peak_step)/(float)(end_step-peak_step));
+                }else{
+                    if(animation_step_peripheral[i]+state.animation_speed*cur_b*10 > peak_step){
+                        animation_step_peripheral[i] = peak_step;
+                    }else{
+                        animation_step_peripheral[i] += state.animation_speed*cur_b*10;
+                    }
+                }
+            }else if((pressed_peripheral[i] == 1 && animation_step_peripheral[i] == 0) || animation_step_peripheral[i] > 0){
+                // increment animation step
+                animation_step_peripheral[i] += state.animation_speed*cur_b*10;
+            }
+
+            
+
+
+            if(animation_step_peripheral[i] == 0){
+                hsb.b = 0;
+            }else if(animation_step_peripheral[i] < peak_step){
+                hsb.b = (float)cur_b*((float)animation_step_peripheral[i]/(float)peak_step);
+                if(hsb.b == 1){
+                    hsb.b = 2;
+                }
+            }else if(animation_step_peripheral[i] >= peak_step){
+                hsb.b = (float)cur_b*(1.0-((float)(animation_step_peripheral[i]-peak_step)/(float)(end_step-peak_step)));
+                if(hsb.b == 1){
+                    hsb.b = 2;
+                }
+            }
+
+            if(animation_step_peripheral[i] >= end_step){
+                animation_step_peripheral[i] = 0;
+            }
+
+            pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+        }
+    }
+    
+    
+    state.animation_step += state.animation_speed;
+    state.animation_step = state.animation_step % HUE_MAX;
+}
+
 static int key_press_event_listener(const zmk_event_t *eh) {
     const struct zmk_position_state_changed *ev = as_zmk_position_state_changed(eh);
 
@@ -420,6 +530,9 @@ static void zmk_rgb_underglow_tick(struct k_work *work) {
         break;
     case UNDERGLOW_EFFECT_REACTIVE:
         zmk_rgb_underglow_effect_reactive();
+        break;
+    case UNDERGLOW_EFFECT_REACTIVE_SPECTRUM:
+        zmk_rgb_underglow_effect_reactive_spectrum();
         break;
     case UNDERGLOW_EFFECT_PIXEL_CYCLE:
         zmk_rgb_underglow_effect_pixel_cycle();
