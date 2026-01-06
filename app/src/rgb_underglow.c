@@ -236,9 +236,10 @@ _Bool pressed_peripheral[STRIP_NUM_PIXELS];
 int animation_step_central[STRIP_NUM_PIXELS];
 int animation_step_peripheral[STRIP_NUM_PIXELS];
 
-// custom effect - react to key press
-static void zmk_rgb_underglow_effect_reactive(void) {
+_Bool pressed[STRIP_NUM_PIXELS];
+int per_pixel_animation_step[STRIP_NUM_PIXELS];
 
+static void zmk_rgb_underglow_effect_reactive(void){
     struct zmk_led_hsb hsb = state.color;
     int cur_b;
     if(hsb.b < BRT_MAX/4){
@@ -250,107 +251,169 @@ static void zmk_rgb_underglow_effect_reactive(void) {
     int peak_step = 50*cur_b;
     int end_step = 750*cur_b;
 
-    if(CENTRAL){
-        for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
-            
-            if(pressed_central[i] == 1 && animation_step_central[i] != 0){
-                // if key is pressed during animation and animation is in dimming phase,
-                // set current step to step with same brightness in brightening phase
-                if(animation_step_central[i] >= peak_step){
-                    animation_step_central[i] = peak_step*(1.0-(float)(animation_step_central[i]-peak_step)/(float)(end_step-peak_step));
+    for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
+        
+        if(pressed[i] == 1 && per_pixel_animation_step[i] != 0){
+            // if key is pressed during animation and animation is in dimming phase,
+            // set current step to step with same brightness in brightening phase
+            if(per_pixel_animation_step[i] >= peak_step){
+                per_pixel_animation_step[i] = peak_step*(1.0-(float)(per_pixel_animation_step[i]-peak_step)/(float)(end_step-peak_step));
+            }else{
+                if(per_pixel_animation_step[i]+state.animation_speed*cur_b*10 > peak_step){
+                    per_pixel_animation_step[i] = peak_step;
                 }else{
-                    if(animation_step_central[i]+state.animation_speed*cur_b*10 > peak_step){
-                        animation_step_central[i] = peak_step;
-                    }else{
-                        animation_step_central[i] += state.animation_speed*cur_b*10;
-                    }
-                }
-            }else if((pressed_central[i] == 1 && animation_step_central[i] == 0) || animation_step_central[i] > 0){
-                // increment animation step
-                animation_step_central[i] += state.animation_speed*cur_b*10;
-            }
-
-            
-
-
-            if(animation_step_central[i] == 0){
-                hsb.b = 0;
-            }else if(animation_step_central[i] < peak_step){
-                hsb.b = (float)cur_b*((float)animation_step_central[i]/(float)peak_step);
-                if(hsb.b == 1){
-                    hsb.b = 2;
-                }
-            }else if(animation_step_central[i] >= peak_step){
-                hsb.b = (float)cur_b*(1.0-((float)(animation_step_central[i]-peak_step)/(float)(end_step-peak_step)));
-                if(hsb.b == 1){
-                    hsb.b = 2;
+                    per_pixel_animation_step[i] += state.animation_speed*cur_b*10;
                 }
             }
-
-            if(animation_step_central[i] >= end_step){
-                animation_step_central[i] = 0;
-            }
-
-            pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+        }else if(([i] == 1 && per_pixel_animation_step[i] == 0) || per_pixel_animation_step[i] > 0){
+            // increment animation step
+            per_pixel_animation_step[i] += state.animation_speed*cur_b*10;
         }
-    }else{
-        for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
-            
-            if(pressed_peripheral[i] == 1 && animation_step_peripheral[i] != 0){
-                // if key is pressed during animation and animation is in dimming phase,
-                // set current step to step with same brightness in brightening phase
-                if(animation_step_peripheral[i] >= peak_step){
-                    animation_step_peripheral[i] = peak_step*(1.0-(float)(animation_step_peripheral[i]-peak_step)/(float)(end_step-peak_step));
-                }else{
-                    if(animation_step_peripheral[i]+state.animation_speed*cur_b*10 > peak_step){
-                        animation_step_peripheral[i] = peak_step;
-                    }else{
-                        animation_step_peripheral[i] += state.animation_speed*cur_b*10;
-                    }
-                }
-            }else if((pressed_peripheral[i] == 1 && animation_step_peripheral[i] == 0) || animation_step_peripheral[i] > 0){
-                // increment animation step
-                animation_step_peripheral[i] += state.animation_speed*cur_b*10;
+
+        if(per_pixel_animation_step[i] == 0){
+            hsb.b = 0;
+        }else if(per_pixel_animation_step[i] < peak_step){
+            hsb.b = (float)cur_b*((float)per_pixel_animation_step[i]/(float)peak_step);
+            if(hsb.b == 1){
+                hsb.b = 2;
             }
-
-            
-
-
-            if(animation_step_peripheral[i] == 0){
-                hsb.b = 0;
-            }else if(animation_step_peripheral[i] < peak_step){
-                hsb.b = (float)cur_b*((float)animation_step_peripheral[i]/(float)peak_step);
-                if(hsb.b == 1){
-                    hsb.b = 2;
-                }
-            }else if(animation_step_peripheral[i] >= peak_step){
-                hsb.b = (float)cur_b*(1.0-((float)(animation_step_peripheral[i]-peak_step)/(float)(end_step-peak_step)));
-                if(hsb.b == 1){
-                    hsb.b = 2;
-                }
+        }else if(per_pixel_animation_step[i] >= peak_step){
+            hsb.b = (float)cur_b*(1.0-((float)(per_pixel_animation_step[i]-peak_step)/(float)(end_step-peak_step)));
+            if(hsb.b == 1){
+                hsb.b = 2;
             }
-
-            if(animation_step_peripheral[i] >= end_step){
-                animation_step_peripheral[i] = 0;
-            }
-
-            pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
         }
+
+        if(per_pixel_animation_step[i] >= end_step){
+            per_pixel_animation_step[i] = 0;
+        }
+
+        pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
     }
     
-    
-    state.animation_step += 1; //state.animation_speed * 10;
+    // state.animation_step += 1; //state.animation_speed * 10;
 
-    if (state.animation_step > 2400) {
-        state.animation_step = 0;
-    }
+    // if (state.animation_step > 2400) {
+    //     state.animation_step = 0;
+    // }
 }
+
+// custom effect - react to key press
+// static void zmk_rgb_underglow_effect_reactive_old(void) {
+
+//     struct zmk_led_hsb hsb = state.color;
+//     int cur_b;
+//     if(hsb.b < BRT_MAX/4){
+//         cur_b = BRT_MAX/4;
+//     }else{
+//         cur_b = hsb.b;
+//     }
+
+//     int peak_step = 50*cur_b;
+//     int end_step = 750*cur_b;
+
+//     if(CENTRAL){
+//         for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
+            
+//             if(pressed_central[i] == 1 && animation_step_central[i] != 0){
+//                 // if key is pressed during animation and animation is in dimming phase,
+//                 // set current step to step with same brightness in brightening phase
+//                 if(animation_step_central[i] >= peak_step){
+//                     animation_step_central[i] = peak_step*(1.0-(float)(animation_step_central[i]-peak_step)/(float)(end_step-peak_step));
+//                 }else{
+//                     if(animation_step_central[i]+state.animation_speed*cur_b*10 > peak_step){
+//                         animation_step_central[i] = peak_step;
+//                     }else{
+//                         animation_step_central[i] += state.animation_speed*cur_b*10;
+//                     }
+//                 }
+//             }else if((pressed_central[i] == 1 && animation_step_central[i] == 0) || animation_step_central[i] > 0){
+//                 // increment animation step
+//                 animation_step_central[i] += state.animation_speed*cur_b*10;
+//             }
+
+            
+
+
+//             if(animation_step_central[i] == 0){
+//                 hsb.b = 0;
+//             }else if(animation_step_central[i] < peak_step){
+//                 hsb.b = (float)cur_b*((float)animation_step_central[i]/(float)peak_step);
+//                 if(hsb.b == 1){
+//                     hsb.b = 2;
+//                 }
+//             }else if(animation_step_central[i] >= peak_step){
+//                 hsb.b = (float)cur_b*(1.0-((float)(animation_step_central[i]-peak_step)/(float)(end_step-peak_step)));
+//                 if(hsb.b == 1){
+//                     hsb.b = 2;
+//                 }
+//             }
+
+//             if(animation_step_central[i] >= end_step){
+//                 animation_step_central[i] = 0;
+//             }
+
+//             pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+//         }
+//     }else{
+//         for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
+            
+//             if(pressed_peripheral[i] == 1 && animation_step_peripheral[i] != 0){
+//                 // if key is pressed during animation and animation is in dimming phase,
+//                 // set current step to step with same brightness in brightening phase
+//                 if(animation_step_peripheral[i] >= peak_step){
+//                     animation_step_peripheral[i] = peak_step*(1.0-(float)(animation_step_peripheral[i]-peak_step)/(float)(end_step-peak_step));
+//                 }else{
+//                     if(animation_step_peripheral[i]+state.animation_speed*cur_b*10 > peak_step){
+//                         animation_step_peripheral[i] = peak_step;
+//                     }else{
+//                         animation_step_peripheral[i] += state.animation_speed*cur_b*10;
+//                     }
+//                 }
+//             }else if((pressed_peripheral[i] == 1 && animation_step_peripheral[i] == 0) || animation_step_peripheral[i] > 0){
+//                 // increment animation step
+//                 animation_step_peripheral[i] += state.animation_speed*cur_b*10;
+//             }
+
+            
+
+
+//             if(animation_step_peripheral[i] == 0){
+//                 hsb.b = 0;
+//             }else if(animation_step_peripheral[i] < peak_step){
+//                 hsb.b = (float)cur_b*((float)animation_step_peripheral[i]/(float)peak_step);
+//                 if(hsb.b == 1){
+//                     hsb.b = 2;
+//                 }
+//             }else if(animation_step_peripheral[i] >= peak_step){
+//                 hsb.b = (float)cur_b*(1.0-((float)(animation_step_peripheral[i]-peak_step)/(float)(end_step-peak_step)));
+//                 if(hsb.b == 1){
+//                     hsb.b = 2;
+//                 }
+//             }
+
+//             if(animation_step_peripheral[i] >= end_step){
+//                 animation_step_peripheral[i] = 0;
+//             }
+
+//             pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+//         }
+//     }
+    
+    
+//     state.animation_step += 1; //state.animation_speed * 10;
+
+//     if (state.animation_step > 2400) {
+//         state.animation_step = 0;
+//     }
+// }
 
 // reactive spectrum
 static void zmk_rgb_underglow_effect_reactive_spectrum(void) {
 
     struct zmk_led_hsb hsb = state.color;
     hsb.h = state.animation_step;
+    hsb.s = SAT_MAX;
 
     int cur_b;
     if(hsb.b < BRT_MAX/4){
@@ -460,9 +523,7 @@ static int key_press_event_listener(const zmk_event_t *eh) {
 
     // LOG_INF("pressed key at %d", &ev->position);
 
-    int pixel_pos;
-    // int device;
-    if(ev && state.current_effect == UNDERGLOW_EFFECT_REACTIVE || state.current_effect == UNDERGLOW_EFFECT_REACTIVE_SPECTRUM) { 
+    if(ev && (state.current_effect == UNDERGLOW_EFFECT_REACTIVE || state.current_effect == UNDERGLOW_EFFECT_REACTIVE_SPECTRUM)) { 
 
         // keys
         // |0 |1 |2 |3 |4 |5 |       |6 |7 |8 |9 |10|11|
@@ -492,13 +553,21 @@ static int key_press_event_listener(const zmk_event_t *eh) {
 
         _Bool central;
         for(int i = 0; i < STRIP_NUM_PIXELS-6; i++){
-            if(ev->position == central_keys[i]){
-                pressed_central[leds[ev->position]+6] = ev->state;
+            if(ev->position == central_keys[i] && CENTRAL){
+                pressed[leds[ev->position]+6] = ev->state;
                 return ZMK_EV_EVENT_BUBBLE;
             }
+            // if(ev->position == central_keys[i]){
+            //     pressed_central[leds[ev->position]+6] = ev->state;
+            //     return ZMK_EV_EVENT_BUBBLE;
+            // }
         }
 
-        pressed_peripheral[leds[ev->position]+6] = ev->state;
+        if(!CENTRAL){
+            pressed[leds[ev->position]+6] = ev->state;
+        }
+        
+        // pressed_peripheral[leds[ev->position]+6] = ev->state;
         
         // if(ev->state == 1 && state.current_effect == UNDERGLOW_EFFECT_REACTIVE) {
         //     pressed[ev->position+6] = 1;
