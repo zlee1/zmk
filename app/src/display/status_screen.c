@@ -38,7 +38,7 @@ lv_obj_t *zmk_display_status_screen() {
     lv_obj_t *screen;
     screen = lv_obj_create(NULL);
 
-    label = lv_label_create(screen);
+    *label = lv_label_create(screen);
     lv_label_set_text(label, 'TEST');
     lv_obj_align(label, LV_ALIGN_TOP_RIGHT, 0, 0);
 
